@@ -7,7 +7,7 @@ RiwiMediCare Plus, replacing the previous email/spreadsheet-based workflow.
 ## Coder
 
 - **Name:** Luis Rafael Reyes Caro
-- **Clan:** _<coloca aquí el nombre de tu clan>_
+- **Clan:** _<NodeJS Nest AM>_
 
 ## Tech stack
 
