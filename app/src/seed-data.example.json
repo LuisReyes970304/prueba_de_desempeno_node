@@ -1,0 +1,18 @@
+{
+  "users": [
+    { "name": "Ana Torres", "email": "ana.torres@riwimedicare.com", "password": "AnaSecure123!", "role": "manager" },
+    { "name": "Bruno Diaz", "email": "bruno.diaz@riwimedicare.com", "password": "BrunoSecure123!", "role": "admin" }
+  ],
+  "clinics": [
+    { "name": "Clinica del Norte", "nit": 900555111, "address": "Av 68 # 45-12, Bogota", "phone": 3011234567, "responsibleName": "Dra. Paula Gomez" },
+    { "name": "Clinica del Sur", "nit": 900555222, "address": "Cra 15 # 80-20, Bogota", "phone": 3021234567, "responsibleName": "Dr. Andres Lopez" }
+  ],
+  "warehouses": [
+    { "name": "Bodega Central", "location": "Zona Industrial, Bogota", "phone": 3031234567 },
+    { "name": "Bodega Norte", "location": "Autopista Norte, Bogota", "phone": 3041234567 }
+  ],
+  "medications": [
+    { "name": "Ibuprofen 400mg", "description": "Anti-inflammatory, tablet presentation", "unit": "box" },
+    { "name": "Paracetamol 500mg", "description": "Analgesic and antipyretic", "unit": "box" }
+  ]
+}

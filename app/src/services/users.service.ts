@@ -10,7 +10,7 @@ const userRepository = new UserRepository();
  * The only two roles allowed for self-registration, as required
  * by the business rules: "Administrador" and "Gestor de Solicitudes".
  */
-const ALLOWED_ROLES = ["admin", "manager"] as const;
+export const ALLOWED_ROLES = ["admin", "manager"] as const;
 
 export class UserService implements UserServiceInterface {
     async create(data: UserCreationDto): Promise<User> {
