@@ -9,9 +9,10 @@ import userRouter from "./src/routes/user.routes.ts";
 import clinicRouter from "./src/routes/clinic.routes.ts";
 import warehouseRouter from "./src/routes/warehouse.routes.ts";
 import inventoryRouter from "./src/routes/inventory.routes.ts";
-import medicationRouter from "./src/routes/medication.routes.ts"
-import seedRouter from "./src/routes/seed.routes.ts"
-import supplyRequestRouter from "./src/routes/supply-request.routes.ts"
+import medicationRouter from "./src/routes/medication.routes.ts";
+import seedRouter from "./src/routes/seed.routes.ts";
+import supplyRequestRouter from "./src/routes/supply-request.routes.ts";
+import path from "path";
 
 const openapiSpecification = swaggerJsdoc(options);
 
@@ -20,6 +21,7 @@ await sequelize.sync();
 
 const app = express();
 
+app.use(express.static(path.join(import.meta.dirname, "public")));
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(openapiSpecification));
 app.use(express.json());
 

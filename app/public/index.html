@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RiwiMediCare Plus — Supply Management</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-dot"></span>
+      RiwiMediCare <strong>Plus</strong>
+    </div>
+    <div id="session-info" class="session-info hidden">
+      Logged in as <strong id="session-name"></strong>
+      (<span id="session-role"></span>)
+      <button id="logout-btn" class="btn btn-ghost">Log out</button>
+    </div>
+  </header>
+
+  <!-- ===================== AUTH VIEW ===================== -->
+  <main id="auth-view" class="auth-view">
+    <div class="auth-grid">
+
+      <section class="card">
+        <h2>Log in</h2>
+        <form id="login-form">
+          <label>Email
+            <input type="email" id="login-email" required placeholder="luisreyescaro@gmail.com" />
+          </label>
+          <label>Password
+            <input type="password" id="login-password" required placeholder="••••••••" />
+          </label>
+          <button type="submit" class="btn btn-primary">Log in</button>
+        </form>
+        <p class="hint">Try the seeded admin: <code>luisreyescaro@gmail.com</code> / <code>LuisDev2026!</code></p>
+      </section>
+
+      <section class="card">
+        <h2>Register</h2>
+        <form id="register-form">
+          <label>Name
+            <input type="text" id="register-name" required placeholder="Jane Doe" />
+          </label>
+          <label>Email
+            <input type="email" id="register-email" required placeholder="jane@riwimedicare.com" />
+          </label>
+          <label>Password
+            <input type="password" id="register-password" required placeholder="••••••••" />
+          </label>
+          <label>Role
+            <select id="register-role">
+              <option value="manager">manager (Gestor de Solicitudes)</option>
+              <option value="admin">admin (Administrador)</option>
+            </select>
+          </label>
+          <button type="submit" class="btn btn-secondary">Create account</button>
+        </form>
+      </section>
+
+    </div>
+    <p id="auth-message" class="message hidden"></p>
+  </main>
+
+  <!-- ===================== DASHBOARD VIEW ===================== -->
+  <main id="dashboard-view" class="dashboard-view hidden">
+
+    <nav class="tabs">
+      <button class="tab-btn active" data-tab="clinics">Clinics</button>
+      <button class="tab-btn" data-tab="warehouses">Warehouses</button>
+      <button class="tab-btn" data-tab="medications">Medications</button>
+      <button class="tab-btn" data-tab="inventory">Inventory</button>
+      <button class="tab-btn" data-tab="requests">Supply Requests</button>
+    </nav>
+
+    <p id="dashboard-message" class="message hidden"></p>
+
+    <!-- CLINICS -->
+    <section id="tab-clinics" class="tab-panel">
+      <div class="panel-grid">
+        <div class="card">
+          <h2>New clinic</h2>
+          <form id="clinic-form">
+            <label>Name <input type="text" id="clinic-name" required /></label>
+            <label>NIT <input type="number" id="clinic-nit" required /></label>
+            <label>Address <input type="text" id="clinic-address" required /></label>
+            <label>Phone <input type="number" id="clinic-phone" required /></label>
+            <label>Responsible name <input type="text" id="clinic-responsible" required /></label>
+            <button type="submit" class="btn btn-primary">Create clinic</button>
+          </form>
+        </div>
+        <div class="card list-card">
+          <div class="list-card-header">
+            <h2>Active clinics</h2>
+            <button class="btn btn-ghost" data-reload="clinics">Reload</button>
+          </div>
+          <div class="table-wrap"><table id="clinics-table"><thead>
+            <tr><th>ID</th><th>Name</th><th>NIT</th><th>Address</th><th>Responsible</th><th>Phone</th><th></th></tr>
+          </thead><tbody></tbody></table></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- WAREHOUSES -->
+    <section id="tab-warehouses" class="tab-panel hidden">
+      <div class="panel-grid">
+        <div class="card">
+          <h2>New warehouse</h2>
+          <form id="warehouse-form">
+            <label>Name <input type="text" id="warehouse-name" required /></label>
+            <label>Location <input type="text" id="warehouse-location" required /></label>
+            <label>Phone <input type="number" id="warehouse-phone" required /></label>
+            <button type="submit" class="btn btn-primary">Create warehouse</button>
+          </form>
+        </div>
+        <div class="card list-card">
+          <div class="list-card-header">
+            <h2>Active warehouses</h2>
+            <button class="btn btn-ghost" data-reload="warehouses">Reload</button>
+          </div>
+          <div class="table-wrap"><table id="warehouses-table"><thead>
+            <tr><th>ID</th><th>Name</th><th>Location</th><th>Phone</th><th></th></tr>
+          </thead><tbody></tbody></table></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MEDICATIONS -->
+    <section id="tab-medications" class="tab-panel hidden">
+      <div class="panel-grid">
+        <div class="card">
+          <h2>New medication</h2>
+          <form id="medication-form">
+            <label>Name <input type="text" id="medication-name" required /></label>
+            <label>Description <input type="text" id="medication-description" required /></label>
+            <label>Unit <input type="text" id="medication-unit" placeholder="box, bottle..." required /></label>
+            <button type="submit" class="btn btn-primary">Create medication</button>
+          </form>
+        </div>
+        <div class="card list-card">
+          <div class="list-card-header">
+            <h2>Active medications</h2>
+            <button class="btn btn-ghost" data-reload="medications">Reload</button>
+          </div>
+          <div class="table-wrap"><table id="medications-table"><thead>
+            <tr><th>ID</th><th>Name</th><th>Description</th><th>Unit</th><th></th></tr>
+          </thead><tbody></tbody></table></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- INVENTORY -->
+    <section id="tab-inventory" class="tab-panel hidden">
+      <div class="panel-grid">
+        <div class="card">
+          <h2>New inventory entry</h2>
+          <form id="inventory-form">
+            <label>Warehouse ID <input type="number" id="inventory-warehouseId" required /></label>
+            <label>Medication ID <input type="number" id="inventory-medicationId" required /></label>
+            <label>Quantity <input type="number" id="inventory-quantity" required /></label>
+            <button type="submit" class="btn btn-primary">Create entry</button>
+          </form>
+        </div>
+        <div class="card list-card">
+          <div class="list-card-header">
+            <h2>Active inventory</h2>
+            <button class="btn btn-ghost" data-reload="inventory">Reload</button>
+          </div>
+          <div class="table-wrap"><table id="inventory-table"><thead>
+            <tr><th>ID</th><th>Medication</th><th>Warehouse</th><th>Quantity</th><th></th></tr>
+          </thead><tbody></tbody></table></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SUPPLY REQUESTS -->
+    <section id="tab-requests" class="tab-panel hidden">
+      <div class="panel-grid">
+        <div class="card">
+          <h2>New supply request</h2>
+          <form id="request-form">
+            <label>Clinic ID <input type="number" id="request-clinicId" required /></label>
+            <label>Medication ID <input type="number" id="request-medicationId" required /></label>
+            <label>Warehouse ID <input type="number" id="request-warehouseId" required /></label>
+            <label>Quantity <input type="number" id="request-quantity" required /></label>
+            <button type="submit" class="btn btn-primary">Create request</button>
+          </form>
+        </div>
+        <div class="card list-card">
+          <div class="list-card-header">
+            <h2>Active requests</h2>
+            <div class="header-actions">
+              <button class="btn btn-ghost" data-reload="requests">Reload active</button>
+              <button class="btn btn-ghost" id="load-history-btn">Load full history</button>
+            </div>
+          </div>
+          <div class="table-wrap"><table id="requests-table"><thead>
+            <tr><th>ID</th><th>Medication</th><th>Clinic</th><th>Warehouse</th><th>Qty</th><th>Status</th><th>Requested by</th><th>Update status</th></tr>
+          </thead><tbody></tbody></table></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

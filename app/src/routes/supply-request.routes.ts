@@ -217,7 +217,7 @@ router.patch(
 /**
  * @openapi
  * /requests/{id}:
- *   put:
+ *   patch:
  *     summary: Update a supply request
  *     description: >
  *       Updates the clinic, medication, warehouse or quantity of an existing supply
@@ -270,7 +270,7 @@ router.patch(
  *       409:
  *         description: Insufficient inventory for the resulting quantity.
  */
-router.put(
+router.patch(
     "/:id",
     verifyToken,
     authorizeRoles("admin"),
