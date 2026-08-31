@@ -1,23 +1,9 @@
 import type { Response, NextFunction } from "express";
 import type { AuthenticatedRequest } from "./auth.middleware.ts";
 import { MedicationRepository } from "../repository/medication.repository.ts";
+import { parseNonEmptyString } from "../utils/validation.util.ts";
 
 const medicationRepository = new MedicationRepository();
-
-/**
- * Helper that validates and normalizes the name field from the body.
- * Returns null (and already responded 400) if it's not a valid string.
- */
-function parseNameFromBody(body: unknown, res: Response): string | null {
-    const name = (body as { name?: unknown })?.name;
-
-    if (typeof name !== "string" || name.trim().length === 0) {
-        res.status(400).json({ error: "Invalid or missing medication name" });
-        return null;
-    }
-
-    return name.trim();
-}
 
 /**
  * Middleware for POST /medication.
@@ -30,8 +16,11 @@ export const validateMedicationNameOnCreate = async (
     next: NextFunction,
 ): Promise<void> => {
     try {
-        const name = parseNameFromBody(req.body, res);
-        if (name === null) return;
+        const name = parseNonEmptyString((req.body as { name?: unknown })?.name);
+        if (name === null) {
+            res.status(400).json({ error: "Invalid or missing medication name" });
+            return;
+        }
 
         const existingMedication = await medicationRepository.findByName(name);
         if (existingMedication) {
@@ -65,8 +54,11 @@ export const validateMedicationNameOnUpdate = async (
             return;
         }
 
-        const name = parseNameFromBody(body, res);
-        if (name === null) return;
+        const name = parseNonEmptyString(body.name);
+        if (name === null) {
+            res.status(400).json({ error: "Invalid or missing medication name" });
+            return;
+        }
 
         const medicationId = Number(req.params.id);
         if (!Number.isInteger(medicationId) || medicationId <= 0) {

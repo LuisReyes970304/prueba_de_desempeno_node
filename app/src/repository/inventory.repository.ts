@@ -3,6 +3,7 @@ import Inventory from "../models/inventory.model.ts";
 import Warehouse from "../models/werehouse.model.ts";
 import Medication from "../models/medication.model.ts";
 import type { InventoryCreationDto, InventoryUpdateDto } from "../dto/inventory.dto.ts";
+import { updatePartial } from "../utils/sequelize.util.ts";
 
 /**
  * This class is the inventory repository.
@@ -42,11 +43,7 @@ export class InventoryRepository implements InventoryRepoInterface {
     }
 
     async update(id: number, data: InventoryUpdateDto): Promise<boolean> {
-        const [affectedCount] = await Inventory.update(data, {
-            where: { id }
-        });
-
-        return affectedCount > 0;
+        return await updatePartial(Inventory, id, data);
     }
 
     async delete(id: number): Promise<boolean> {

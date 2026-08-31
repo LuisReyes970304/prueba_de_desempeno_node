@@ -1,6 +1,7 @@
 import type { MedicationRepoInterface } from "./interface/medication.repository.interface.ts";
 import Medication from "../models/medication.model.ts";
 import type { MedicationCreationDto, MedicationUpdateDto } from "../dto/medication.dto.ts";
+import { updatePartial } from "../utils/sequelize.util.ts";
 
 /**
  * This class is the medication repository.
@@ -31,11 +32,7 @@ export class MedicationRepository implements MedicationRepoInterface {
     }
 
     async update(id: number, data: MedicationUpdateDto): Promise<boolean> {
-        const [affectedCount] = await Medication.update(data, {
-            where: { id }
-        });
-
-        return affectedCount > 0;
+        return await updatePartial(Medication, id, data);
     }
 
     async delete(id: number): Promise<boolean> {

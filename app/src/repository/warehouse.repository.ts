@@ -4,6 +4,7 @@ import type {
     WarehouseCreationDto,
     WarehouseUpdateDto
 } from "../dto/warehouse.dto.ts";
+import { updatePartial } from "../utils/sequelize.util.ts";
 
 /**
  * This class is the warehouse repository.
@@ -80,14 +81,7 @@ export class WarehouseRepository implements WarehouseRepoInterface {
         id: number,
         data: WarehouseUpdateDto
     ): Promise<boolean> {
-        const [affectedCount] = await Warehouse.update(
-            data,
-            {
-                where: { id }
-            }
-        );
-
-        return affectedCount > 0;
+        return await updatePartial(Warehouse, id, data);
     }
 
     /**

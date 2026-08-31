@@ -5,16 +5,19 @@ import { passwordManager } from "../utils/bcrypt.util.ts";
 
 
 /**
- * defautl users
- * toles admin and operator.
+ * Usuarios fijos, siempre presentes (útiles para probar login,
+ * roles, admin panel, etc. con credenciales conocidas).
  */
 const fixedUsers: UserCreationDto[] = [
     { name: "Luis Reyes", email: "luisreyescaro@gmail.com", password: "LuisDev2026!", role: "admin"},
-    { name: "Demo User", email: "user@gmail.com",password: "DemoUser2026!", role: "operator" },
+    { name: "Demo User", email: "user@gmail.com",password: "DemoUser2026!", role: "manager" },
 ];
 
 /**
- * Runs the user seeder.
+ * Ejecuta el seeder de usuarios.
+ * Es idempotente: si el usuario ya existe (por "name") no lo vuelve
+ * a crear, así se puede ejecutar cada vez que levanta el contenedor
+ * sin generar duplicados ni errores.
  */
 export async function runSeeder(): Promise<void> {
     await sequelize.authenticate();

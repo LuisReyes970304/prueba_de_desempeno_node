@@ -1,23 +1,9 @@
 import type { Response, NextFunction } from "express";
 import type { AuthenticatedRequest } from "./auth.middleware.ts";
 import { ClinicRepository } from "../repository/clinic.repository.ts";
+import { parsePositiveInteger } from "../utils/validation.util.ts";
 
 const clinicRepository = new ClinicRepository();
-
-/**
- * Helper que valida y normaliza el NIT recibido en el body.
- * Devuelve null (y ya respondió el 400) si no es un número válido.
- */
-function parseNitFromBody(body: unknown, res: Response): number | null {
-    const nit = Number((body as { nit?: unknown })?.nit);
-
-    if (!Number.isInteger(nit) || nit <= 0) {
-        res.status(400).json({ error: "Invalid or missing clinic NIT" });
-        return null;
-    }
-
-    return nit;
-}
 
 /**
  * Middleware para POST /api/clinicas.
@@ -30,8 +16,11 @@ export const validateNitOnCreate = async (
     next: NextFunction,
 ): Promise<void> => {
     try {
-        const nit = parseNitFromBody(req.body, res);
-        if (nit === null) return;
+        const nit = parsePositiveInteger((req.body as { nit?: unknown })?.nit);
+        if (nit === null) {
+            res.status(400).json({ error: "Invalid or missing clinic NIT" });
+            return;
+        }
 
         const existingClinic = await clinicRepository.findByNit(nit);
         if (existingClinic) {
@@ -66,8 +55,11 @@ export const validateNitOnUpdate = async (
             return;
         }
 
-        const nit = parseNitFromBody(body, res);
-        if (nit === null) return;
+        const nit = parsePositiveInteger(body.nit);
+        if (nit === null) {
+            res.status(400).json({ error: "Invalid or missing clinic NIT" });
+            return;
+        }
 
         const clinicId = Number(req.params.id);
         if (!Number.isInteger(clinicId) || clinicId <= 0) {

@@ -1,14 +1,16 @@
 import { SupplyRequestService } from "../services/supply-request.service.ts";
 import type { Response } from "express";
 import type { AuthenticatedRequest } from "../middleware/auth.middleware.ts";
+import { BaseController } from "./base.controller.ts";
 
-class SupplyRequestController {
+class SupplyRequestController extends BaseController {
     /**
      *
      * @param supplyRequestService - Inject of SupplyRequestService dependency
      * allowing better testing in the future.
      */
     constructor(private supplyRequestService: SupplyRequestService = new SupplyRequestService()) {
+        super();
         this.createSupplyRequest = this.createSupplyRequest.bind(this);
         this.findActiveSupplyRequests = this.findActiveSupplyRequests.bind(this);
         this.findSupplyRequestHistory = this.findSupplyRequestHistory.bind(this);
@@ -36,7 +38,7 @@ class SupplyRequestController {
             const supplyRequest = await this.supplyRequestService.create(req.body, requestedByUserId);
             res.status(201).json(supplyRequest);
         } catch (error) {
-            this.handleError(res, error, 400, "Unexpected error creating supply request");
+            this.handleError(res, error, 400, { defaultMsg: "Unexpected error creating supply request" });
         }
     };
 
@@ -158,36 +160,6 @@ class SupplyRequestController {
         }
     };
 
-    /**
-     * Helper that validates a route param as a positive integer ID.
-     */
-    private validateId(id: unknown, res: Response, label: string): number | null {
-        const parsedId = Number(id);
-
-        if (!Number.isInteger(parsedId) || parsedId <= 0) {
-            res.status(400).json({ error: `Invalid or missing ${label}` });
-            return null;
-        }
-
-        return parsedId;
-    }
-
-    /**
-     * Helper that handles service errors.
-     */
-    private handleError(
-        res: Response,
-        error: unknown,
-        defaultStatus: number,
-        defaultMsg = "An unexpected error occurred"
-    ) {
-        const message = error instanceof Error ? error.message : defaultMsg;
-        const status = message.toLowerCase().includes("not found")
-            ? 404
-            : defaultStatus;
-
-        res.status(status).json({ error: message });
-    }
 }
 
 export const supplyRequestController = new SupplyRequestController();

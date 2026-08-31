@@ -9,12 +9,12 @@ const router = Router();
  * @openapi
  * /clinic:
  *   post:
- *     summary: Create clinic
+ *     summary: Crear clínica
  *     description: create a new clinic, just admin can do it.
  *     security:
  *       - bearerAuth: []
  *     tags:
- *       - Clinics
+ *       - Clinicas
  *     requestBody:
  *       required: true
  *       content:
@@ -72,7 +72,7 @@ router.post(
  *     security:
  *       - bearerAuth: []
  *     tags:
- *       - Clinics
+ *       - Clinicas
  *     responses:
  *       200:
  *         description: Clinic list returned.
@@ -90,7 +90,7 @@ router.get("/", verifyToken, clinicController.findAllClinics);
  *     security:
  *       - bearerAuth: []
  *     tags:
- *       - Clinics
+ *       - Clinicas
  *     parameters:
  *       - in: path
  *         name: id
@@ -120,7 +120,7 @@ router.get("/:id", verifyToken, clinicController.findOneClinic);
  *     security:
  *       - bearerAuth: []
  *     tags:
- *       - Clinics
+ *       - Clinicas
  *     parameters:
  *       - in: path
  *         name: id
@@ -182,7 +182,7 @@ router.patch(
  *     security:
  *       - bearerAuth: []
  *     tags:
- *       - Clinics
+ *       - Clinicas
  *     parameters:
  *       - in: path
  *         name: id
@@ -219,7 +219,7 @@ router.delete(
  *     security:
  *       - bearerAuth: []
  *     tags:
- *       - Clinics
+ *       - Clinicas
  *     parameters:
  *       - in: path
  *         name: id

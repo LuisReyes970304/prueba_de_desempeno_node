@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { supplyRequestController } from "../controllers/supply-request.controller.ts";
 import { verifyToken, authorizeRoles } from "../middleware/auth.middleware.ts";
-import { validateSupplyRequestOnCreate, validateStatusUpdate } from "../middleware/supply-request.middleware.ts";
+import { validateSupplyRequestOnCreate, validateSupplyRequestOnUpdate, validateStatusUpdate } from "../middleware/supply-request.middleware.ts";
 
 const router = Router();
 
@@ -217,9 +217,14 @@ router.patch(
 /**
  * @openapi
  * /requests/{id}:
- *   patch:
+ *   put:
  *     summary: Update a supply request
- *     description: Updates the clinic, medication, warehouse or quantity of an existing supply request. Only admin users can perform this action.
+ *     description: >
+ *       Updates the clinic, medication, warehouse or quantity of an existing supply
+ *       request. Only admin users can perform this action. Any changed field is
+ *       re-validated exactly like on creation: referenced clinic/medication/warehouse
+ *       must exist, and the resulting warehouse must hold enough stock of the
+ *       resulting medication to cover the resulting quantity.
  *     security:
  *       - bearerAuth: []
  *     tags:
@@ -261,12 +266,15 @@ router.patch(
  *       403:
  *         description: User does not have admin role.
  *       404:
- *         description: Supply request not found.
+ *         description: Supply request, clinic, medication or warehouse not found.
+ *       409:
+ *         description: Insufficient inventory for the resulting quantity.
  */
-router.patch(
+router.put(
     "/:id",
     verifyToken,
     authorizeRoles("admin"),
+    validateSupplyRequestOnUpdate,
     supplyRequestController.updateSupplyRequest
 );
 

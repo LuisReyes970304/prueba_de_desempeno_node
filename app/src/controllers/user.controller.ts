@@ -1,13 +1,15 @@
 import { UserService } from "../services/users.service.ts";
 import type { Response, Request } from "express";
 import type { AuthenticatedRequest } from "../middleware/auth.middleware.ts";
+import { BaseController } from "./base.controller.ts";
 
-class UserController {
+class UserController extends BaseController {
     /**
      * 
      * @param userService - Inject de UserService dependency allowing a best testing in the future.
      */
     constructor(private userService: UserService = new UserService()) {
+        super();
         this.findAllUsers = this.findAllUsers.bind(this);
         this.createUser = this.createUser.bind(this);
         this.updateUser = this.updateUser.bind(this);
@@ -23,7 +25,7 @@ class UserController {
             const user = await this.userService.create(req.body);
             res.status(201).json(user);
         } catch (error) {
-            this.handleError(res, error, 400, "Unexpected error creating user");
+            this.handleError(res, error, 400, { defaultMsg: "Unexpected error creating user" });
         }
     };
 
@@ -46,7 +48,7 @@ class UserController {
      */
     updateUser = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
         try {
-            const id = this.validateId(req.params.id, res);
+            const id = this.validateId(req.params.id, res, "user ID");
             if (id === null) return;
 
             const isSelf = req.user?.id === id;
@@ -68,7 +70,7 @@ class UserController {
      */
     deleteUser = async (req: Request, res: Response): Promise<void> => {
         try {
-            const id = this.validateId(req.params.id, res);
+            const id = this.validateId(req.params.id, res, "user ID");
             if (id === null) return;
 
             const userDeleted = await this.userService.delete(id);
@@ -79,11 +81,11 @@ class UserController {
     };
 
     /**
-     * 
+     * Restores a soft-deleted user.
      */
     restoreUser = async (req: Request, res: Response): Promise<void> => {
         try {
-            const id = this.validateId(req.params.id, res);
+            const id = this.validateId(req.params.id, res, "user ID");
             if (id === null) return;
 
             const userRestored = await this.userService.restore(id);
@@ -92,27 +94,6 @@ class UserController {
             this.handleError(res, error, 500);
         }
     };
-
-    /**
-     * --- This is a helper that allows validate the id ---
-     */ 
-    private validateId(id: unknown, res: Response): number | null {
-        const parsedId = Number(id);
-        if (!Number.isInteger(parsedId) || parsedId <= 0) {
-            res.status(400).json({
-                error: "Invalid or missing user ID"
-            });
-            return null;
-        }
-        return parsedId;
-    }
-
-    private handleError(res: Response, error: unknown, defaultStatus: number, defaultMsg = "An unexpected error occurred") {
-        const message = error instanceof Error ? error.message : defaultMsg;
-        const status = message.includes("not found") ? 404 : defaultStatus;
-        res.status(status).json({ error: message });
-    }
 }
-
 
 export const userController = new UserController();

@@ -3,6 +3,7 @@ import type { AuthenticatedRequest } from "./auth.middleware.ts";
 import { InventoryRepository } from "../repository/inventory.repository.ts";
 import { WarehouseRepository } from "../repository/warehouse.repository.ts";
 import { MedicationRepository } from "../repository/medication.repository.ts";
+import { parsePositiveInteger } from "../utils/validation.util.ts";
 
 const inventoryRepository = new InventoryRepository();
 const warehouseRepository = new WarehouseRepository();
@@ -18,6 +19,8 @@ interface ParsedInventoryBody {
  * Helper that reads and validates the numeric fields of the inventory
  * body. Fields that are not present in the input are left undefined
  * so the caller can decide whether they are required or optional.
+ * warehouseId/medicationId reuse the shared positive-integer
+ * validator; quantity has its own rule since 0 is a valid stock level.
  */
 function parseInventoryBody(
     body: unknown,
@@ -36,12 +39,18 @@ function parseInventoryBody(
             continue;
         }
 
-        const value = Number(raw[field]);
-        const isValid = field === "quantity"
-            ? Number.isInteger(value) && value >= 0
-            : Number.isInteger(value) && value > 0;
+        if (field === "quantity") {
+            const quantity = Number(raw[field]);
+            if (!Number.isInteger(quantity) || quantity < 0) {
+                res.status(400).json({ error: "Invalid quantity" });
+                return null;
+            }
+            result.quantity = quantity;
+            continue;
+        }
 
-        if (!isValid) {
+        const value = parsePositiveInteger(raw[field]);
+        if (value === null) {
             res.status(400).json({ error: `Invalid ${field}` });
             return null;
         }

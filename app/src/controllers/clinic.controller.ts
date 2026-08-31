@@ -1,13 +1,15 @@
 import { ClinicService } from "../services/clinic.service.ts";
 import type { Response, Request } from "express";
+import { BaseController } from "./base.controller.ts";
 
-class ClinicController {
+class ClinicController extends BaseController {
     /**
      *
      * @param clinicService - Inject of ClinicService dependency
      * allowing better testing in the future.
      */
     constructor(private clinicService: ClinicService = new ClinicService()) {
+        super();
         this.findAllClinics = this.findAllClinics.bind(this);
         this.findOneClinic = this.findOneClinic.bind(this);
         this.createClinic = this.createClinic.bind(this);
@@ -24,7 +26,10 @@ class ClinicController {
             const clinic = await this.clinicService.create(req.body);
             res.status(201).json(clinic);
         } catch (error) {
-            this.handleError(res, error, 400, "Unexpected error creating clinic");
+            this.handleError(res, error, 400, {
+                defaultMsg: "Unexpected error creating clinic",
+                uniqueConstraintMessage: "A clinic with this NIT already exists",
+            });
         }
     };
 
@@ -45,7 +50,7 @@ class ClinicController {
      */
     findOneClinic = async (req: Request, res: Response): Promise<void> => {
         try {
-            const id = this.validateId(req.params.id, res);
+            const id = this.validateId(req.params.id, res, "clinic ID");
             if (id === null) return;
 
             const clinic = await this.clinicService.findOne(id);
@@ -60,13 +65,13 @@ class ClinicController {
      */
     updateClinic = async (req: Request, res: Response): Promise<void> => {
         try {
-            const id = this.validateId(req.params.id, res);
+            const id = this.validateId(req.params.id, res, "clinic ID");
             if (id === null) return;
 
             const clinicUpdated = await this.clinicService.update(id, req.body);
             res.status(200).json(clinicUpdated);
         } catch (error) {
-            this.handleError(res, error, 500);
+            this.handleError(res, error, 500, { uniqueConstraintMessage: "A clinic with this NIT already exists" });
         }
     };
 
@@ -75,7 +80,7 @@ class ClinicController {
      */
     deleteClinic = async (req: Request, res: Response): Promise<void> => {
         try {
-            const id = this.validateId(req.params.id, res);
+            const id = this.validateId(req.params.id, res, "clinic ID");
             if (id === null) return;
 
             const clinicDeleted = await this.clinicService.delete(id);
@@ -90,7 +95,7 @@ class ClinicController {
      */
     restoreClinic = async (req: Request, res: Response): Promise<void> => {
         try {
-            const id = this.validateId(req.params.id, res);
+            const id = this.validateId(req.params.id, res, "clinic ID");
             if (id === null) return;
 
             const clinicRestored = await this.clinicService.restore(id);
@@ -99,39 +104,6 @@ class ClinicController {
             this.handleError(res, error, 500);
         }
     };
-
-    /**
-     * Helper that validates an ID.
-     */
-    private validateId(id: unknown, res: Response): number | null {
-        const parsedId = Number(id);
-
-        if (!Number.isInteger(parsedId) || parsedId <= 0) {
-            res.status(400).json({
-                error: "Invalid or missing clinic ID"
-            });
-            return null;
-        }
-
-        return parsedId;
-    }
-
-    /**
-     * Helper that handles service errors.
-     */
-    private handleError(
-        res: Response,
-        error: unknown,
-        defaultStatus: number,
-        defaultMsg = "An unexpected error occurred"
-    ) {
-        const message = error instanceof Error ? error.message : defaultMsg;
-        const status = message.toLowerCase().includes("not found")
-            ? 404
-            : defaultStatus;
-
-        res.status(status).json({ error: message });
-    }
 }
 
 export const clinicController = new ClinicController();

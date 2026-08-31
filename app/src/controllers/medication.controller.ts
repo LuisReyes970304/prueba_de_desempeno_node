@@ -1,13 +1,15 @@
 import { MedicationService } from "../services/medication.service.ts";
 import type { Response, Request } from "express";
+import { BaseController } from "./base.controller.ts";
 
-class MedicationController {
+class MedicationController extends BaseController {
     /**
      *
      * @param medicationService - Inject of MedicationService dependency
      * allowing better testing in the future.
      */
     constructor(private medicationService: MedicationService = new MedicationService()) {
+        super();
         this.findAllMedications = this.findAllMedications.bind(this);
         this.findOneMedication = this.findOneMedication.bind(this);
         this.createMedication = this.createMedication.bind(this);
@@ -24,7 +26,10 @@ class MedicationController {
             const medication = await this.medicationService.create(req.body);
             res.status(201).json(medication);
         } catch (error) {
-            this.handleError(res, error, 400, "Unexpected error creating medication");
+            this.handleError(res, error, 400, {
+                defaultMsg: "Unexpected error creating medication",
+                uniqueConstraintMessage: "A medication with this name already exists",
+            });
         }
     };
 
@@ -45,7 +50,7 @@ class MedicationController {
      */
     findOneMedication = async (req: Request, res: Response): Promise<void> => {
         try {
-            const id = this.validateId(req.params.id, res);
+            const id = this.validateId(req.params.id, res, "medication ID");
             if (id === null) return;
 
             const medication = await this.medicationService.findOne(id);
@@ -60,13 +65,13 @@ class MedicationController {
      */
     updateMedication = async (req: Request, res: Response): Promise<void> => {
         try {
-            const id = this.validateId(req.params.id, res);
+            const id = this.validateId(req.params.id, res, "medication ID");
             if (id === null) return;
 
             const medicationUpdated = await this.medicationService.update(id, req.body);
             res.status(200).json(medicationUpdated);
         } catch (error) {
-            this.handleError(res, error, 500);
+            this.handleError(res, error, 500, { uniqueConstraintMessage: "A medication with this name already exists" });
         }
     };
 
@@ -75,7 +80,7 @@ class MedicationController {
      */
     deleteMedication = async (req: Request, res: Response): Promise<void> => {
         try {
-            const id = this.validateId(req.params.id, res);
+            const id = this.validateId(req.params.id, res, "medication ID");
             if (id === null) return;
 
             const medicationDeleted = await this.medicationService.delete(id);
@@ -90,7 +95,7 @@ class MedicationController {
      */
     restoreMedication = async (req: Request, res: Response): Promise<void> => {
         try {
-            const id = this.validateId(req.params.id, res);
+            const id = this.validateId(req.params.id, res, "medication ID");
             if (id === null) return;
 
             const medicationRestored = await this.medicationService.restore(id);
@@ -99,49 +104,6 @@ class MedicationController {
             this.handleError(res, error, 500);
         }
     };
-
-    /**
-     * Helper that validates an ID.
-     */
-    private validateId(id: unknown, res: Response): number | null {
-        const parsedId = Number(id);
-
-        if (!Number.isInteger(parsedId) || parsedId <= 0) {
-            res.status(400).json({
-                error: "Invalid or missing medication ID"
-            });
-            return null;
-        }
-
-        return parsedId;
-    }
-
-    /**
-     * Helper that handles service errors.
-     */
-    private handleError(
-        res: Response,
-        error: unknown,
-        defaultStatus: number,
-        defaultMsg = "An unexpected error occurred"
-    ) {
-        if (
-            error &&
-            typeof error === "object" &&
-            "name" in error &&
-            (error as { name: unknown }).name === "SequelizeUniqueConstraintError"
-        ) {
-            res.status(409).json({ error: "A medication with this name already exists" });
-            return;
-        }
-
-        const message = error instanceof Error ? error.message : defaultMsg;
-        const status = message.toLowerCase().includes("not found")
-            ? 404
-            : defaultStatus;
-
-        res.status(status).json({ error: message });
-    }
 }
 
 export const medicationController = new MedicationController();

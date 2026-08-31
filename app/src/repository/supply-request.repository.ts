@@ -5,6 +5,7 @@ import Medication from "../models/medication.model.ts";
 import Warehouse from "../models/werehouse.model.ts";
 import User from "../models/user.model.ts";
 import type { SupplyRequestCreationDto, SupplyRequestUpdateDto } from "../dto/supply-request.dto.ts";
+import { updatePartial } from "../utils/sequelize.util.ts";
 
 /**
  * Association includes shared by every read method, so the response
@@ -70,9 +71,7 @@ export class SupplyRequestRepository implements SupplyRequestRepoInterface {
     }
 
     async update(id: number, data: SupplyRequestUpdateDto): Promise<boolean> {
-        const [affectedCount] = await SupplyRequest.update(data, { where: { id } });
-
-        return affectedCount > 0;
+        return await updatePartial(SupplyRequest, id, data);
     }
 
     async delete(id: number): Promise<boolean> {

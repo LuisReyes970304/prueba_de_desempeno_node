@@ -1,13 +1,15 @@
 import { InventoryService } from "../services/inventory.service.ts";
 import type { Response, Request } from "express";
+import { BaseController } from "./base.controller.ts";
 
-class InventoryController {
+class InventoryController extends BaseController {
     /**
      *
      * @param inventoryService - Inject of InventoryService dependency
      * allowing better testing in the future.
      */
     constructor(private inventoryService: InventoryService = new InventoryService()) {
+        super();
         this.findAllInventoryEntries = this.findAllInventoryEntries.bind(this);
         this.findOneInventoryEntry = this.findOneInventoryEntry.bind(this);
         this.createInventoryEntry = this.createInventoryEntry.bind(this);
@@ -24,7 +26,10 @@ class InventoryController {
             const inventoryEntry = await this.inventoryService.create(req.body);
             res.status(201).json(inventoryEntry);
         } catch (error) {
-            this.handleError(res, error, 400, "Unexpected error creating inventory entry");
+            this.handleError(res, error, 400, {
+                defaultMsg: "Unexpected error creating inventory entry",
+                uniqueConstraintMessage: "An inventory entry for this warehouse and medication already exists",
+            });
         }
     };
 
@@ -45,7 +50,7 @@ class InventoryController {
      */
     findOneInventoryEntry = async (req: Request, res: Response): Promise<void> => {
         try {
-            const id = this.validateId(req.params.id, res);
+            const id = this.validateId(req.params.id, res, "inventory entry ID");
             if (id === null) return;
 
             const inventoryEntry = await this.inventoryService.findOne(id);
@@ -60,13 +65,15 @@ class InventoryController {
      */
     updateInventoryEntry = async (req: Request, res: Response): Promise<void> => {
         try {
-            const id = this.validateId(req.params.id, res);
+            const id = this.validateId(req.params.id, res, "inventory entry ID");
             if (id === null) return;
 
             const inventoryUpdated = await this.inventoryService.update(id, req.body);
             res.status(200).json(inventoryUpdated);
         } catch (error) {
-            this.handleError(res, error, 500);
+            this.handleError(res, error, 500, {
+                uniqueConstraintMessage: "An inventory entry for this warehouse and medication already exists",
+            });
         }
     };
 
@@ -75,7 +82,7 @@ class InventoryController {
      */
     deleteInventoryEntry = async (req: Request, res: Response): Promise<void> => {
         try {
-            const id = this.validateId(req.params.id, res);
+            const id = this.validateId(req.params.id, res, "inventory entry ID");
             if (id === null) return;
 
             const inventoryDeleted = await this.inventoryService.delete(id);
@@ -90,7 +97,7 @@ class InventoryController {
      */
     restoreInventoryEntry = async (req: Request, res: Response): Promise<void> => {
         try {
-            const id = this.validateId(req.params.id, res);
+            const id = this.validateId(req.params.id, res, "inventory entry ID");
             if (id === null) return;
 
             const inventoryRestored = await this.inventoryService.restore(id);
@@ -99,49 +106,6 @@ class InventoryController {
             this.handleError(res, error, 500);
         }
     };
-
-    /**
-     * Helper that validates an ID.
-     */
-    private validateId(id: unknown, res: Response): number | null {
-        const parsedId = Number(id);
-
-        if (!Number.isInteger(parsedId) || parsedId <= 0) {
-            res.status(400).json({
-                error: "Invalid or missing inventory entry ID"
-            });
-            return null;
-        }
-
-        return parsedId;
-    }
-
-    /**
-     * Helper that handles service errors.
-     */
-    private handleError(
-        res: Response,
-        error: unknown,
-        defaultStatus: number,
-        defaultMsg = "An unexpected error occurred"
-    ) {
-        if (
-            error &&
-            typeof error === "object" &&
-            "name" in error &&
-            (error as { name: unknown }).name === "SequelizeUniqueConstraintError"
-        ) {
-            res.status(409).json({ error: "An inventory entry for this warehouse and medication already exists" });
-            return;
-        }
-
-        const message = error instanceof Error ? error.message : defaultMsg;
-        const status = message.toLowerCase().includes("not found")
-            ? 404
-            : defaultStatus;
-
-        res.status(status).json({ error: message });
-    }
 }
 
 export const inventoryController = new InventoryController();

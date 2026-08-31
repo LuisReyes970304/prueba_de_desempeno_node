@@ -4,6 +4,7 @@ import type {
     ClinicCreationDto,
     ClinicUpdateDto
 } from "../dto/clinic.dto.ts";
+import { updatePartial } from "../utils/sequelize.util.ts";
 
 /**
  * This class is the clinic repository.
@@ -56,12 +57,17 @@ export class ClinicRepository implements ClinicRepoInterface {
      * It is used to verify that a clinic with the same NIT
      * does not already exist in the database.
      *
+     * Includes logically deleted clinics (paranoid: false), because
+     * the NIT column's unique constraint at the database level also
+     * applies to soft-deleted rows.
+     *
      * @param {number} nit - Uses the NIT to find a clinic.
      * @returns {Clinic | null} - Returns the clinic or null if it does not exist.
      */
     async findByNit(nit: number): Promise<Clinic | null> {
         return await Clinic.findOne({
-            where: { nit }
+            where: { nit },
+            paranoid: false
         });
     }
 
@@ -80,14 +86,7 @@ export class ClinicRepository implements ClinicRepoInterface {
         id: number,
         data: ClinicUpdateDto
     ): Promise<boolean> {
-        const [affectedCount] = await Clinic.update(
-            data,
-            {
-                where: { id }
-            }
-        );
-
-        return affectedCount > 0;
+        return await updatePartial(Clinic, id, data);
     }
 
     /**

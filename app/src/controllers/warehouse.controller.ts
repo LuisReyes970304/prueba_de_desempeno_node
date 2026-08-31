@@ -1,11 +1,13 @@
 import { WarehouseService } from "../services/warehouse.service.ts";
 import type { Response, Request } from "express";
+import { BaseController } from "./base.controller.ts";
 
-export class WarehouseController {
+export class WarehouseController extends BaseController {
     /**
      * @param warehouseService - Injects the WarehouseService dependency allowing better testing in the future.
      */
     constructor(private warehouseService: WarehouseService = new WarehouseService()) {
+        super();
         this.createWarehouse = this.createWarehouse.bind(this);
         this.findAllWarehouses = this.findAllWarehouses.bind(this);
         this.findOneWarehouse = this.findOneWarehouse.bind(this);
@@ -22,7 +24,10 @@ export class WarehouseController {
             const warehouse = await this.warehouseService.create(req.body);
             res.status(201).json(warehouse);
         } catch (error) {
-            this.handleError(res, error, 400, "Unexpected error creating warehouse");
+            this.handleError(res, error, 400, {
+                defaultMsg: "Unexpected error creating warehouse",
+                uniqueConstraintMessage: "A warehouse with this name already exists",
+            });
         }
     };
 
@@ -43,13 +48,13 @@ export class WarehouseController {
      */
     findOneWarehouse = async (req: Request, res: Response): Promise<void> => {
         try {
-            const id = this.validateId(req.params.id, res);
+            const id = this.validateId(req.params.id, res, "warehouse ID");
             if (id === null) return;
 
             const warehouse = await this.warehouseService.findOne(id);
             res.status(200).json(warehouse);
         } catch (error) {
-            this.handleError(res, error, 404, "Warehouse not found");
+            this.handleError(res, error, 404, { defaultMsg: "Warehouse not found" });
         }
     };
 
@@ -58,13 +63,13 @@ export class WarehouseController {
      */
     updateWarehouse = async (req: Request, res: Response): Promise<void> => {
         try {
-            const id = this.validateId(req.params.id, res);
+            const id = this.validateId(req.params.id, res, "warehouse ID");
             if (id === null) return;
 
             const warehouseUpdated = await this.warehouseService.update(id, req.body);
             res.status(200).json(warehouseUpdated);
         } catch (error) {
-            this.handleError(res, error, 400);
+            this.handleError(res, error, 400, { uniqueConstraintMessage: "A warehouse with this name already exists" });
         }
     };
 
@@ -73,7 +78,7 @@ export class WarehouseController {
      */
     deleteWarehouse = async (req: Request, res: Response): Promise<void> => {
         try {
-            const id = this.validateId(req.params.id, res);
+            const id = this.validateId(req.params.id, res, "warehouse ID");
             if (id === null) return;
 
             const warehouseDeleted = await this.warehouseService.delete(id);
@@ -88,7 +93,7 @@ export class WarehouseController {
      */
     restoreWarehouse = async (req: Request, res: Response): Promise<void> => {
         try {
-            const id = this.validateId(req.params.id, res);
+            const id = this.validateId(req.params.id, res, "warehouse ID");
             if (id === null) return;
 
             const warehouseRestored = await this.warehouseService.restore(id);
@@ -97,26 +102,6 @@ export class WarehouseController {
             this.handleError(res, error, 500);
         }
     };
-
-    /**
-     * --- Helper method to validate the ID parameter ---
-     */
-    private validateId(id: unknown, res: Response): number | null {
-        const parsedId = Number(id);
-        if (!Number.isInteger(parsedId) || parsedId <= 0) {
-            res.status(400).json({
-                error: "Invalid or missing warehouse ID"
-            });
-            return null;
-        }
-        return parsedId;
-    }
-
-    private handleError(res: Response, error: unknown, defaultStatus: number, defaultMsg = "An unexpected error occurred") {
-        const message = error instanceof Error ? error.message : defaultMsg;
-        const status = message.toLowerCase().includes("not found") ? 404 : defaultStatus;
-        res.status(status).json({ error: message });
-    }
 }
 
 export const warehouseController = new WarehouseController();

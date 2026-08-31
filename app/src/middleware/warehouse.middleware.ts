@@ -1,23 +1,9 @@
 import type { Response, NextFunction } from "express";
 import type { AuthenticatedRequest } from "./auth.middleware.ts";
 import { WarehouseRepository } from "../repository/warehouse.repository.ts";
+import { parseNonEmptyString } from "../utils/validation.util.ts";
 
 const warehouseRepository = new WarehouseRepository();
-
-/**
- * Helper function that validates and normalizes the warehouse name received in the body.
- * Returns null (and sends a 400 response) if it is not a valid text string.
- */
-function parseNameFromBody(body: unknown, res: Response): string | null {
-    const name = (body as { name?: unknown })?.name;
-
-    if (typeof name !== "string" || name.trim().length === 0) {
-        res.status(400).json({ error: "Invalid or missing warehouse name" });
-        return null;
-    }
-
-    return name.trim();
-}
 
 /**
  * Middleware for POST /api/almacenes.
@@ -30,8 +16,11 @@ export const validateWarehouseNameOnCreate = async (
     next: NextFunction,
 ): Promise<void> => {
     try {
-        const name = parseNameFromBody(req.body, res);
-        if (name === null) return;
+        const name = parseNonEmptyString((req.body as { name?: unknown })?.name);
+        if (name === null) {
+            res.status(400).json({ error: "Invalid or missing warehouse name" });
+            return;
+        }
 
         const existingWarehouse = await warehouseRepository.findByName(name);
         if (existingWarehouse) {
@@ -66,8 +55,11 @@ export const validateWarehouseNameOnUpdate = async (
             return;
         }
 
-        const name = parseNameFromBody(body, res);
-        if (name === null) return;
+        const name = parseNonEmptyString(body.name);
+        if (name === null) {
+            res.status(400).json({ error: "Invalid or missing warehouse name" });
+            return;
+        }
 
         const warehouseId = Number(req.params.id);
         if (!Number.isInteger(warehouseId) || warehouseId <= 0) {
