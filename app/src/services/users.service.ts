@@ -6,10 +6,19 @@ import {passwordManager} from "../utils/bcrypt.util.ts";
 
 const userRepository = new UserRepository();
 
+/**
+ * The only two roles allowed for self-registration, as required
+ * by the business rules: "Administrador" and "Gestor de Solicitudes".
+ */
+const ALLOWED_ROLES = ["admin", "manager"] as const;
+
 export class UserService implements UserServiceInterface {
     async create(data: UserCreationDto): Promise<User> {
         if (!data) {
         throw new Error("name and password are required");
+        }
+        if (!ALLOWED_ROLES.includes(data.role as typeof ALLOWED_ROLES[number])) {
+        throw new Error(`Invalid role. Allowed roles are: ${ALLOWED_ROLES.join(", ")}`);
         }
         data.password = await passwordManager.passwordHasher(data.password);
         return await userRepository.create(data);

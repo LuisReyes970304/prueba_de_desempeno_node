@@ -8,8 +8,8 @@ const router = Router();
  * @openapi
  * /user/create_user:
  *   post:
- *     summary: Create new user!
- *     description: Create a new user using a body request.
+ *     summary: Register a new user
+ *     description: Registers a new user. This endpoint is intentionally public (no JWT required), and the caller chooses their own role among the allowed values ("admin" or "manager").
  *     tags:
  *       - Users
  *     requestBody:
@@ -22,6 +22,7 @@ const router = Router();
  *               - name
  *               - email
  *               - password
+ *               - role
  *             properties:
  *               name:
  *                 type: string
@@ -32,9 +33,15 @@ const router = Router();
  *               password:
  *                 type: string
  *                 example: new_password_123
+ *               role:
+ *                 type: string
+ *                 enum: [admin, manager]
+ *                 example: manager
  *     responses:
  *       201:
  *         description: New user created.
+ *       400:
+ *         description: Invalid body or role not allowed.
  */
 router.post("/create_user", userController.createUser);
 

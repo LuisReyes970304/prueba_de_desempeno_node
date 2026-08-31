@@ -1,10 +1,9 @@
 import { Router } from "express";
-import { WarehouseController } from "../controllers/warehouse.controller.ts";
+import { warehouseController } from "../controllers/warehouse.controller.ts";
 import { verifyToken, authorizeRoles } from "../middleware/auth.middleware.ts";
 import { validateWarehouseNameOnCreate, validateWarehouseNameOnUpdate } from "../middleware/warehouse.middleware.ts";
 
 const router = Router();
-const warehouseController = new WarehouseController();
 
 /**
  * @openapi
@@ -53,7 +52,7 @@ router.post(
     verifyToken,
     authorizeRoles("admin"),
     validateWarehouseNameOnCreate,
-    warehouseController.create.bind(warehouseController)
+    warehouseController.createWarehouse
 );
 
 /**
@@ -75,7 +74,7 @@ router.post(
 router.get(
     "/",
     verifyToken,
-    warehouseController.findAll.bind(warehouseController)
+    warehouseController.findAllWarehouses
 );
 
 /**
@@ -109,7 +108,7 @@ router.get(
 router.get(
     "/:id",
     verifyToken,
-    warehouseController.findOne.bind(warehouseController)
+    warehouseController.findOneWarehouse
 );
 
 /**
@@ -165,7 +164,7 @@ router.patch(
     verifyToken,
     authorizeRoles("admin"),
     validateWarehouseNameOnUpdate,
-    warehouseController.update.bind(warehouseController)
+    warehouseController.updateWarehouse
 );
 
 /**
@@ -202,7 +201,7 @@ router.delete(
     "/:id",
     verifyToken,
     authorizeRoles("admin"),
-    warehouseController.delete.bind(warehouseController)
+    warehouseController.deleteWarehouse
 );
 
 /**
@@ -230,8 +229,6 @@ router.delete(
  *         description: Invalid warehouse ID format.
  *       401:
  *         description: Token not found or invalid.
- *       403:
- *         description: User does not have admin role.
  *       404:
  *         description: Warehouse not found.
  */
@@ -239,7 +236,7 @@ router.patch(
     "/:id/restore",
     verifyToken,
     authorizeRoles("admin"),
-    warehouseController.restore.bind(warehouseController)
+    warehouseController.restoreWarehouse
 );
 
 export default router;

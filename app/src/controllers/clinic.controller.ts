@@ -10,7 +10,6 @@ class ClinicController {
     constructor(private clinicService: ClinicService = new ClinicService()) {
         this.findAllClinics = this.findAllClinics.bind(this);
         this.findOneClinic = this.findOneClinic.bind(this);
-        this.findClinicByNit = this.findClinicByNit.bind(this);
         this.createClinic = this.createClinic.bind(this);
         this.updateClinic = this.updateClinic.bind(this);
         this.deleteClinic = this.deleteClinic.bind(this);
@@ -50,21 +49,6 @@ class ClinicController {
             if (id === null) return;
 
             const clinic = await this.clinicService.findOne(id);
-            res.status(200).json(clinic);
-        } catch (error) {
-            this.handleError(res, error, 500);
-        }
-    };
-
-    /**
-     * Method that returns a clinic by its NIT.
-     */
-    findClinicByNit = async (req: Request, res: Response): Promise<void> => {
-        try {
-            const nit = this.validateNit(req.params.nit, res);
-            if (nit === null) return;
-
-            const clinic = await this.clinicService.findByNit(nit);
             res.status(200).json(clinic);
         } catch (error) {
             this.handleError(res, error, 500);
@@ -130,23 +114,6 @@ class ClinicController {
         }
 
         return parsedId;
-    }
-
-    /**
-     * Helper that validates a NIT.
-     * NIT is handled as a number, not as a string.
-     */
-    private validateNit(nit: unknown, res: Response): number | null {
-        const parsedNit = Number(nit);
-
-        if (!Number.isInteger(parsedNit) || parsedNit <= 0) {
-            res.status(400).json({
-                error: "Invalid or missing clinic NIT"
-            });
-            return null;
-        }
-
-        return parsedNit;
     }
 
     /**
