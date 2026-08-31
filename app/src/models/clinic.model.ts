@@ -12,6 +12,8 @@ class Clinic extends Model<InferAttributes<Clinic>, InferCreationAttributes<Clin
     declare name: string;
     declare nit: number;
     declare phone: number;
+    declare address: string;
+    declare responsibleName: string;
 }
 
 Clinic.init(
@@ -32,6 +34,14 @@ Clinic.init(
         },
         phone: {
         type: DataTypes.BIGINT,
+        allowNull: false,
+        },
+        address: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        },
+        responsibleName: {
+        type: DataTypes.STRING,
         allowNull: false,
         }
     },

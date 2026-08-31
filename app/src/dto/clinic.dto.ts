@@ -6,6 +6,7 @@ export interface ClinicCreationDto {
     nit: number;
     address: string;
     phone: number;
+    responsibleName: string;
 }
 
 /**
@@ -16,4 +17,5 @@ export interface ClinicUpdateDto {
     nit?: number;
     address?: string;
     phone?: number;
+    responsibleName?: string;
 }

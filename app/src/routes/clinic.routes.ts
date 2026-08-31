@@ -1,16 +1,20 @@
 import { Router } from "express";
 import { clinicController } from "../controllers/clinic.controller.ts";
+import { verifyToken, authorizeRoles } from "../middleware/auth.middleware.ts";
+import { validateNitOnCreate, validateNitOnUpdate } from "../middleware/clinic.middleware.ts";
 
 const router = Router();
 
 /**
  * @openapi
- * /clinic/create_clinic:
+ * /api/clinicas:
  *   post:
- *     summary: Create new clinic!
- *     description: Create a new clinic using a body request.
+ *     summary: Crear clínica
+ *     description: Crea una nueva clínica. Solo el rol "admin" puede hacerlo. Valida mediante middleware que el NIT no exista previamente (incluyendo clínicas eliminadas lógicamente).
+ *     security:
+ *       - bearerAuth: []
  *     tags:
- *       - Clinics
+ *       - Clinicas
  *     requestBody:
  *       required: true
  *       content:
@@ -21,6 +25,8 @@ const router = Router();
  *               - name
  *               - nit
  *               - phone
+ *               - address
+ *               - responsibleName
  *             properties:
  *               name:
  *                 type: string
@@ -31,95 +37,95 @@ const router = Router();
  *               phone:
  *                 type: integer
  *                 example: 3025949098
+ *               address:
+ *                 type: string
+ *                 example: Calle 45 # 12-30, Bogotá
+ *               responsibleName:
+ *                 type: string
+ *                 example: Dra. María Fernanda Gómez
  *     responses:
  *       201:
- *         description: New clinic created.
+ *         description: Clínica creada exitosamente.
  *       400:
- *         description: Invalid request body.
+ *         description: Body inválido.
+ *       401:
+ *         description: Token faltante o inválido.
+ *       403:
+ *         description: El usuario autenticado no tiene rol admin.
+ *       409:
+ *         description: Ya existe una clínica con ese NIT.
  */
-router.post("/create_clinic", clinicController.createClinic);
+router.post(
+    "/",
+    verifyToken,
+    authorizeRoles("admin"),
+    validateNitOnCreate,
+    clinicController.createClinic
+);
 
 /**
  * @openapi
- * /clinic/get_clinics:
+ * /api/clinicas:
  *   get:
- *     summary: Get all clinics!
- *     description: Get all clinics in the database.
+ *     summary: Listar clínicas activas
+ *     description: Lista todas las clínicas activas (excluye las eliminadas lógicamente). Accesible para cualquier usuario autenticado.
+ *     security:
+ *       - bearerAuth: []
  *     tags:
- *       - Clinics
+ *       - Clinicas
  *     responses:
  *       200:
- *         description: Clinics returned successfully.
- *       500:
- *         description: Unexpected server error.
+ *         description: Clínicas devueltas exitosamente.
+ *       401:
+ *         description: Token faltante o inválido.
  */
-router.get("/get_clinics", clinicController.findAllClinics);
+router.get("/", verifyToken, clinicController.findAllClinics);
 
 /**
  * @openapi
- * /clinic/get_clinic/{id}:
+ * /api/clinicas/{id}:
  *   get:
- *     summary: Get clinic by ID
- *     description: Get an existing clinic using its ID.
+ *     summary: Obtener clínica por ID
+ *     description: Obtiene el detalle de una clínica activa por su ID. Accesible para cualquier usuario autenticado.
+ *     security:
+ *       - bearerAuth: []
  *     tags:
- *       - Clinics
+ *       - Clinicas
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
- *         description: ID of the clinic.
+ *         description: ID de la clínica.
  *         schema:
  *           type: integer
  *           example: 1
  *     responses:
  *       200:
- *         description: Clinic returned successfully.
+ *         description: Clínica devuelta exitosamente.
  *       400:
- *         description: Invalid or missing clinic ID.
+ *         description: ID inválido o faltante.
+ *       401:
+ *         description: Token faltante o inválido.
  *       404:
- *         description: Clinic not found.
+ *         description: Clínica no encontrada.
  */
-router.get("/get_clinic/:id", clinicController.findOneClinic);
+router.get("/:id", verifyToken, clinicController.findOneClinic);
 
 /**
  * @openapi
- * /clinic/get_clinic_by_nit/{nit}:
- *   get:
- *     summary: Get clinic by NIT
- *     description: Get an existing clinic using its NIT.
+ * /api/clinicas/{id}:
+ *   put:
+ *     summary: Actualizar clínica
+ *     description: Actualiza los datos de la clínica. Solo el rol "admin" puede hacerlo. Valida mediante middleware que el NIT (si se envía) no choque con el de otra clínica existente.
+ *     security:
+ *       - bearerAuth: []
  *     tags:
- *       - Clinics
- *     parameters:
- *       - in: path
- *         name: nit
- *         required: true
- *         description: NIT of the clinic.
- *         schema:
- *           type: integer
- *           example: 900123456
- *     responses:
- *       200:
- *         description: Clinic returned successfully.
- *       400:
- *         description: Invalid or missing clinic NIT.
- *       404:
- *         description: Clinic not found.
- */
-router.get("/get_clinic_by_nit/:nit", clinicController.findClinicByNit);
-
-/**
- * @openapi
- * /clinic/update_clinic/{id}:
- *   patch:
- *     summary: Update clinic
- *     description: Update an existing clinic using its ID and request body.
- *     tags:
- *       - Clinics
+ *       - Clinicas
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
- *         description: ID of the clinic to update.
+ *         description: ID de la clínica a actualizar.
  *         schema:
  *           type: integer
  *           example: 1
@@ -132,71 +138,113 @@ router.get("/get_clinic_by_nit/:nit", clinicController.findClinicByNit);
  *             properties:
  *               name:
  *                 type: string
- *                 example: Clínica Central Updated
+ *                 example: Clínica Central Actualizada
  *               nit:
  *                 type: integer
  *                 example: 900987654
+ *               phone:
+ *                 type: integer
+ *                 example: 3025949098
+ *               address:
+ *                 type: string
+ *                 example: Carrera 10 # 20-15, Bogotá
+ *               responsibleName:
+ *                 type: string
+ *                 example: Dr. Carlos Andrés Pérez
  *     responses:
  *       200:
- *         description: Clinic updated successfully.
+ *         description: Clínica actualizada exitosamente.
  *       400:
- *         description: Invalid clinic ID or request body.
+ *         description: ID o body inválido.
+ *       401:
+ *         description: Token faltante o inválido.
+ *       403:
+ *         description: El usuario autenticado no tiene rol admin.
  *       404:
- *         description: Clinic not found.
+ *         description: Clínica no encontrada.
+ *       409:
+ *         description: El NIT ya pertenece a otra clínica.
  */
-router.patch("/update_clinic/:id", clinicController.updateClinic);
+router.put(
+    "/:id",
+    verifyToken,
+    authorizeRoles("admin"),
+    validateNitOnUpdate,
+    clinicController.updateClinic
+);
 
 /**
  * @openapi
- * /clinic/delete/{id}:
+ * /api/clinicas/{id}:
  *   delete:
- *     summary: Delete clinic by ID
- *     description: Soft-delete an existing clinic using its ID.
+ *     summary: Eliminar clínica (lógico)
+ *     description: Elimina lógicamente una clínica (paranoid en Sequelize). Solo el rol "admin" puede hacerlo. La clínica no se borra físicamente y puede restaurarse.
+ *     security:
+ *       - bearerAuth: []
  *     tags:
- *       - Clinics
+ *       - Clinicas
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
- *         description: ID of the clinic to delete.
+ *         description: ID de la clínica a eliminar.
  *         schema:
  *           type: integer
  *           example: 1
  *     responses:
  *       200:
- *         description: Clinic deleted successfully.
+ *         description: Clínica eliminada exitosamente (soft-delete).
  *       400:
- *         description: Invalid or missing clinic ID.
+ *         description: ID inválido o faltante.
+ *       401:
+ *         description: Token faltante o inválido.
+ *       403:
+ *         description: El usuario autenticado no tiene rol admin.
  *       404:
- *         description: Clinic not found.
+ *         description: Clínica no encontrada o ya eliminada.
  */
-router.delete("/delete/:id", clinicController.deleteClinic);
+router.delete(
+    "/:id",
+    verifyToken,
+    authorizeRoles("admin"),
+    clinicController.deleteClinic
+);
 
 /**
  * @openapi
- * /clinic/restore/{id}:
+ * /api/clinicas/{id}/restore:
  *   patch:
- *     summary: Restore clinic by ID
- *     description: Restore a soft-deleted clinic using its ID.
+ *     summary: Restaurar clínica eliminada
+ *     description: Restaura una clínica previamente eliminada de forma lógica. Solo el rol "admin" puede hacerlo.
+ *     security:
+ *       - bearerAuth: []
  *     tags:
- *       - Clinics
+ *       - Clinicas
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
- *         description: ID of the clinic to restore.
+ *         description: ID de la clínica a restaurar.
  *         schema:
  *           type: integer
  *           example: 1
  *     responses:
  *       200:
- *         description: Clinic restored successfully.
+ *         description: Clínica restaurada exitosamente.
  *       400:
- *         description: Invalid or missing clinic ID.
+ *         description: ID inválido o faltante.
+ *       401:
+ *         description: Token faltante o inválido.
+ *       403:
+ *         description: El usuario autenticado no tiene rol admin.
  *       404:
- *         description: Clinic not found.
+ *         description: Clínica no encontrada.
  */
-router.patch("/restore/:id", clinicController.restoreClinic);
+router.patch(
+    "/:id/restore",
+    verifyToken,
+    authorizeRoles("admin"),
+    clinicController.restoreClinic
+);
 
 export default router;
-
