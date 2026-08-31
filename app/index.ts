@@ -9,7 +9,8 @@ import userRouter from "./src/routes/user.routes.ts";
 import clinicRouter from "./src/routes/clinic.routes.ts";
 import warehouseRouter from "./src/routes/warehouse.routes.ts";
 import inventoryRouter from "./src/routes/inventory.routes.ts";
-import medicationRouter from "./src/routes/medication.routes.ts"
+import medicationRouter from "./src/routes/medication.routes.ts";
+import seedRouter from "./src/routes/seed.routes.ts";
 
 const openapiSpecification = swaggerJsdoc(options);
 
@@ -27,26 +28,39 @@ app.use("/clinic", clinicRouter);
 app.use("/warehouse", warehouseRouter);
 app.use("/inventory", inventoryRouter);
 app.use("/medication", medicationRouter);
-
+app.use("/seed", seedRouter);
 /**
  * Any unexisty route will be respond in Json
  */
 app.use((req, res) => {
-  res.status(404).json({ error: `Route ${req.method} ${req.originalUrl} not found` });
+  res
+    .status(404)
+    .json({ error: `Route ${req.method} ${req.originalUrl} not found` });
 });
 
 /**
  * Global error management. it always respond with a Json instead of a HTML
  */
-app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-  console.error(err);
-  const message = err instanceof Error ? err.message : "Internal server error";
-  const status =
-    err && typeof err === "object" && "status" in err && typeof (err as { status: unknown }).status === "number"
-      ? (err as { status: number }).status
-      : 500;
-  res.status(status).json({ error: message });
-});
+app.use(
+  (
+    err: unknown,
+    _req: express.Request,
+    res: express.Response,
+    _next: express.NextFunction,
+  ) => {
+    console.error(err);
+    const message =
+      err instanceof Error ? err.message : "Internal server error";
+    const status =
+      err &&
+      typeof err === "object" &&
+      "status" in err &&
+      typeof (err as { status: unknown }).status === "number"
+        ? (err as { status: number }).status
+        : 500;
+    res.status(status).json({ error: message });
+  },
+);
 
 app.listen(port, () => {
   console.log(`Server is running on ${host}:${port}`);
