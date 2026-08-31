@@ -48,7 +48,7 @@ Clinic.init(
     {
         sequelize: sequelize, 
         timestamps: true,
-        modelName: "Clinc",
+        modelName: "Clinic",
         paranoid: true,
     },
 );

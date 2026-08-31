@@ -7,10 +7,10 @@ const router = Router();
 
 /**
  * @openapi
- * /api/clinicas:
+ * /clinic:
  *   post:
  *     summary: Crear clínica
- *     description: Crea una nueva clínica. Solo el rol "admin" puede hacerlo. Valida mediante middleware que el NIT no exista previamente (incluyendo clínicas eliminadas lógicamente).
+ *     description: create a new clinic, just admin can do it.
  *     security:
  *       - bearerAuth: []
  *     tags:
@@ -45,15 +45,15 @@ const router = Router();
  *                 example: Dra. María Fernanda Gómez
  *     responses:
  *       201:
- *         description: Clínica creada exitosamente.
+ *         description: Clinic created successfully.
  *       400:
- *         description: Body inválido.
+ *         description: invalid body.
  *       401:
- *         description: Token faltante o inválido.
+ *         description: Token not found.
  *       403:
- *         description: El usuario autenticado no tiene rol admin.
+ *         description: The user has not rol admin.
  *       409:
- *         description: Ya existe una clínica con ese NIT.
+ *         description: The clinic with this NIT already exists.
  */
 router.post(
     "/",
@@ -65,28 +65,28 @@ router.post(
 
 /**
  * @openapi
- * /api/clinicas:
+ * /clinic:
  *   get:
- *     summary: Listar clínicas activas
- *     description: Lista todas las clínicas activas (excluye las eliminadas lógicamente). Accesible para cualquier usuario autenticado.
+ *     summary: LIst for all the clinics
+ *     description: All user can get access to the list.
  *     security:
  *       - bearerAuth: []
  *     tags:
  *       - Clinicas
  *     responses:
  *       200:
- *         description: Clínicas devueltas exitosamente.
+ *         description: Clinic list returned.
  *       401:
- *         description: Token faltante o inválido.
+ *         description: TOken not found.
  */
 router.get("/", verifyToken, clinicController.findAllClinics);
 
 /**
  * @openapi
- * /api/clinicas/{id}:
+ * /clinic/{id}:
  *   get:
- *     summary: Obtener clínica por ID
- *     description: Obtiene el detalle de una clínica activa por su ID. Accesible para cualquier usuario autenticado.
+ *     summary: get clinic by ID
+ *     description: found a clinc based on its ID
  *     security:
  *       - bearerAuth: []
  *     tags:
@@ -101,22 +101,22 @@ router.get("/", verifyToken, clinicController.findAllClinics);
  *           example: 1
  *     responses:
  *       200:
- *         description: Clínica devuelta exitosamente.
+ *         description: CLinic found successfully.
  *       400:
- *         description: ID inválido o faltante.
+ *         description: Invalid ID.
  *       401:
- *         description: Token faltante o inválido.
+ *         description: Token not found.
  *       404:
- *         description: Clínica no encontrada.
+ *         description: Clinic not found.
  */
 router.get("/:id", verifyToken, clinicController.findOneClinic);
 
 /**
  * @openapi
- * /api/clinicas/{id}:
+ * /clinic/{id}:
  *   put:
- *     summary: Actualizar clínica
- *     description: Actualiza los datos de la clínica. Solo el rol "admin" puede hacerlo. Valida mediante middleware que el NIT (si se envía) no choque con el de otra clínica existente.
+ *     summary: Update clinic
+ *     description: Just addmin can update the clinics
  *     security:
  *       - bearerAuth: []
  *     tags:
@@ -125,7 +125,7 @@ router.get("/:id", verifyToken, clinicController.findOneClinic);
  *       - in: path
  *         name: id
  *         required: true
- *         description: ID de la clínica a actualizar.
+ *         description: clinic of ID to update.
  *         schema:
  *           type: integer
  *           example: 1
@@ -138,7 +138,7 @@ router.get("/:id", verifyToken, clinicController.findOneClinic);
  *             properties:
  *               name:
  *                 type: string
- *                 example: Clínica Central Actualizada
+ *                 example: Central clinic updated
  *               nit:
  *                 type: integer
  *                 example: 900987654
@@ -153,17 +153,17 @@ router.get("/:id", verifyToken, clinicController.findOneClinic);
  *                 example: Dr. Carlos Andrés Pérez
  *     responses:
  *       200:
- *         description: Clínica actualizada exitosamente.
+ *         description: Clinic updated succesfully.
  *       400:
- *         description: ID o body inválido.
+ *         description: body or id no found.
  *       401:
- *         description: Token faltante o inválido.
+ *         description: Token not found.
  *       403:
- *         description: El usuario autenticado no tiene rol admin.
+ *         description: The user is not admin.
  *       404:
- *         description: Clínica no encontrada.
+ *         description: Clinic not found.
  *       409:
- *         description: El NIT ya pertenece a otra clínica.
+ *         description: The NIT belong to another clinic.
  */
 router.put(
     "/:id",
@@ -175,10 +175,10 @@ router.put(
 
 /**
  * @openapi
- * /api/clinicas/{id}:
+ * /clinic/{id}:
  *   delete:
- *     summary: Eliminar clínica (lógico)
- *     description: Elimina lógicamente una clínica (paranoid en Sequelize). Solo el rol "admin" puede hacerlo. La clínica no se borra físicamente y puede restaurarse.
+ *     summary: Soft delete 
+ *     description: Delete the clinic using soft-delete
  *     security:
  *       - bearerAuth: []
  *     tags:
@@ -193,15 +193,15 @@ router.put(
  *           example: 1
  *     responses:
  *       200:
- *         description: Clínica eliminada exitosamente (soft-delete).
+ *         description: Clinic deleted (soft-delete).
  *       400:
- *         description: ID inválido o faltante.
+ *         description: Invalid ID.
  *       401:
- *         description: Token faltante o inválido.
+ *         description: Token not found.
  *       403:
- *         description: El usuario autenticado no tiene rol admin.
+ *         description: USer is not admin.
  *       404:
- *         description: Clínica no encontrada o ya eliminada.
+ *         description: Clinic not found.
  */
 router.delete(
     "/:id",
@@ -212,10 +212,10 @@ router.delete(
 
 /**
  * @openapi
- * /api/clinicas/{id}/restore:
+ * /clinic/{id}/restore:
  *   patch:
- *     summary: Restaurar clínica eliminada
- *     description: Restaura una clínica previamente eliminada de forma lógica. Solo el rol "admin" puede hacerlo.
+ *     summary: Restore deleted clinic
+ *     description: Restore deleted clinic with soft delete
  *     security:
  *       - bearerAuth: []
  *     tags:
@@ -224,21 +224,21 @@ router.delete(
  *       - in: path
  *         name: id
  *         required: true
- *         description: ID de la clínica a restaurar.
+ *         description: ID of clinit to restore.
  *         schema:
  *           type: integer
  *           example: 1
  *     responses:
  *       200:
- *         description: Clínica restaurada exitosamente.
+ *         description: Clinic restored succesfully.
  *       400:
- *         description: ID inválido o faltante.
+ *         description: Invalid ID.
  *       401:
- *         description: Token faltante o inválido.
+ *         description: Token not found.
  *       403:
- *         description: El usuario autenticado no tiene rol admin.
+ *         description: User is not admin.
  *       404:
- *         description: Clínica no encontrada.
+ *         description: Clinic not found.
  */
 router.patch(
     "/:id/restore",
