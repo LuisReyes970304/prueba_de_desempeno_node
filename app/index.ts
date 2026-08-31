@@ -7,7 +7,9 @@ import { host, port } from "./src/config/database.ts";
 import authRouter from "./src/routes/auth.routes.ts";
 import userRouter from "./src/routes/user.routes.ts";
 import clinicRouter from "./src/routes/clinic.routes.ts";
-import warehouseRouter from "./src/routes/warehouse.routes.ts"
+import warehouseRouter from "./src/routes/warehouse.routes.ts";
+import inventoryRouter from "./src/routes/inventory.routes.ts";
+import medicationRouter from "./src/routes/medication.routes.ts"
 
 const openapiSpecification = swaggerJsdoc(options);
 
@@ -23,6 +25,8 @@ app.use("/auth", authRouter);
 app.use("/user", userRouter);
 app.use("/clinic", clinicRouter);
 app.use("/warehouse", warehouseRouter);
+app.use("/inventory", inventoryRouter);
+app.use("/medication", medicationRouter);
 
 /**
  * Any unexisty route will be respond in Json
