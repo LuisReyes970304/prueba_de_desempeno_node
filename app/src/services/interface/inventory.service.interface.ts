@@ -1,19 +1,18 @@
-import Inventory from "../../models/inventory.model.ts";
-import type { InventoryCreationDto, InventoryUpdateDto } from "../../dto/inventory.dto.ts";
+import type { InventoryCreationDto, InventoryUpdateDto, InventoryResponseDto } from "../../dto/inventory.dto.ts";
 
 /**
  * This is the interface for the inventory service class.
  */
 export interface InventoryServiceInterface {
-    create(data: InventoryCreationDto): Promise<Inventory>;
+    create(data: InventoryCreationDto): Promise<InventoryResponseDto>;
 
-    findAll(): Promise<Inventory[]>;
+    findAll(): Promise<InventoryResponseDto[]>;
 
-    findOne(id: number): Promise<Inventory>;
+    findOne(id: number): Promise<InventoryResponseDto>;
 
-    update(id: number, data: InventoryUpdateDto): Promise<Inventory>;
+    update(id: number, data: InventoryUpdateDto): Promise<InventoryResponseDto>;
 
     delete(id: number): Promise<boolean>;
 
-    restore(id: number): Promise<Inventory>;
+    restore(id: number): Promise<InventoryResponseDto>;
 }

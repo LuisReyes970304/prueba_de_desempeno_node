@@ -7,6 +7,7 @@ import {
     type InferAttributes,
     type InferCreationAttributes,
     type CreationOptional,
+    type NonAttribute,
 } from "sequelize";
 
 /**
@@ -20,6 +21,11 @@ class Inventory extends Model<InferAttributes<Inventory>, InferCreationAttribute
     declare warehouseId: number;
     declare medicationId: number;
     declare quantity: number;
+
+    /** Present only when the query eager-loads the "warehouse" association. */
+    declare warehouse?: NonAttribute<Warehouse>;
+    /** Present only when the query eager-loads the "medication" association. */
+    declare medication?: NonAttribute<Medication>;
 }
 
 Inventory.init(
