@@ -217,7 +217,7 @@ router.patch(
 /**
  * @openapi
  * /requests/{id}:
- *   put:
+ *   patch:
  *     summary: Update a supply request
  *     description: Updates the clinic, medication, warehouse or quantity of an existing supply request. Only admin users can perform this action.
  *     security:
@@ -263,7 +263,7 @@ router.patch(
  *       404:
  *         description: Supply request not found.
  */
-router.put(
+router.patch(
     "/:id",
     verifyToken,
     authorizeRoles("admin"),
