@@ -1,0 +1,46 @@
+import sequelize from "../config/database.ts";
+import {
+    DataTypes,
+    Model,
+    type InferAttributes,
+    type InferCreationAttributes,
+    type CreationOptional,
+} from "sequelize";
+
+class Clinic extends Model<InferAttributes<Clinic>, InferCreationAttributes<Clinic>>{
+    declare id: CreationOptional<number>;
+    declare name: string;
+    declare nit: number;
+    declare phone: number;
+}
+
+Clinic.init(
+    {
+        id: {
+        type: DataTypes.INTEGER,
+        autoIncrement: true,
+        primaryKey: true,
+        },
+        name: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        },
+        nit: {
+        type: DataTypes.BIGINT,
+        allowNull: false,
+        unique: true
+        },
+        phone: {
+        type: DataTypes.BIGINT,
+        allowNull: false,
+        }
+    },
+    {
+        sequelize: sequelize, 
+        timestamps: true,
+        modelName: "Clinc",
+        paranoid: true,
+    },
+);
+
+export default Clinic;

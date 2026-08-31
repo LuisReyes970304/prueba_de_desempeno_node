@@ -22,7 +22,6 @@ const router = Router();
  *               - name
  *               - email
  *               - password
- *               - role
  *             properties:
  *               name:
  *                 type: string
@@ -33,9 +32,6 @@ const router = Router();
  *               password:
  *                 type: string
  *                 example: new_password_123
- *               role:
- *                 type: string
- *                 example: admin
  *     responses:
  *       201:
  *         description: New user created.
@@ -63,7 +59,9 @@ router.get("/get_users", verifyToken, authorizeRoles("admin"), userController.fi
  * /user/update_user/{id}:
  *   patch:
  *     summary: Update user
- *     description: Update an existing user's details using the request body.
+ *     description: Update an existing user's details using the request body. A "user" can only update their own account; an "admin" can update any account.
+ *     security:
+ *       - bearerAuth: []
  *     tags:
  *       - Users
  *     parameters:
@@ -92,10 +90,14 @@ router.get("/get_users", verifyToken, authorizeRoles("admin"), userController.fi
  *         description: User updated successfully.
  *       400:
  *         description: Invalid user ID or request body.
+ *       401:
+ *         description: Missing or invalid token.
+ *       403:
+ *         description: You can only update your own account.
  *       404:
  *         description: User not found.
  */
-router.patch("/update_user/:id", userController.updateUser);
+router.patch("/update_user/:id", verifyToken, userController.updateUser);
 
 /**
  * @openapi

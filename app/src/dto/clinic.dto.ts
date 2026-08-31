@@ -3,9 +3,9 @@
  */
 export interface ClinicCreationDto {
     name: string;
-    nit: string;
+    nit: number;
     address: string;
-    phone: string;
+    phone: number;
 }
 
 /**
@@ -13,7 +13,7 @@ export interface ClinicCreationDto {
  */
 export interface ClinicUpdateDto {
     name?: string;
-    nit?: string;
+    nit?: number;
     address?: string;
-    phone?: string;
+    phone?: number;
 }

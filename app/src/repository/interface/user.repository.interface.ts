@@ -21,7 +21,7 @@ export interface UserRepoInterface {
 
     /**
      * This method allows to update a new user, based on the id 
-     * to find the ight one and the name to modify the current one.
+     * to find the right one and the name to modify the current one.
      * 
      * @param {number} id 
      * @param {UserUpdateDto} data

@@ -1,5 +1,6 @@
 import { UserService } from "../services/users.service.ts";
 import type { Response, Request } from "express";
+import type { AuthenticatedRequest } from "../middleware/auth.middleware.ts";
 
 class UserController {
     /**
@@ -40,11 +41,20 @@ class UserController {
 
     /**
      * Method that allows update an user and then return the user updated.
+     * An "user" just can be update itself.
+     * An "admin" can update everyone.
      */
-    updateUser = async (req: Request, res: Response): Promise<void> => {
+    updateUser = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
         try {
             const id = this.validateId(req.params.id, res);
             if (id === null) return;
+
+            const isSelf = req.user?.id === id;
+            const isAdmin = req.user?.role === "admin";
+            if (!isSelf && !isAdmin) {
+                res.status(403).json({ error: "You can only update your own account" });
+                return;
+            }
 
             const userUpdated = await this.userService.update(id, req.body);
             res.status(200).json(userUpdated); 
@@ -62,7 +72,7 @@ class UserController {
             if (id === null) return;
 
             const userDeleted = await this.userService.delete(id);
-            res.status(200).json({ userDeleted }); // ¡Corregido: res.json en lugar de return!
+            res.status(200).json({ userDeleted }); 
         } catch (error) {
             this.handleError(res, error, 500);
         }
@@ -104,5 +114,5 @@ class UserController {
     }
 }
 
-// Exportamos una instancia lista para usar en tus rutas (ej: router.put('/:id', userController.updateUser))
+
 export const userController = new UserController();
