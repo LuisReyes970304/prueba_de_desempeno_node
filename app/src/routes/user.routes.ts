@@ -22,6 +22,7 @@ const router = Router();
  *               - name
  *               - email
  *               - password
+ *               - role
  *             properties:
  *               name:
  *                 type: string
@@ -32,6 +33,9 @@ const router = Router();
  *               password:
  *                 type: string
  *                 example: new_password_123
+ *               role:
+ *                 type: string
+ *                 example: admin
  *     responses:
  *       201:
  *         description: New user created.
