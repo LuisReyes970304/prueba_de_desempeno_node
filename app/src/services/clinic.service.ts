@@ -33,16 +33,6 @@ export class ClinicService implements ClinicServiceInterface {
         return clinic;
     }
 
-    async findByNit(nit: number): Promise<Clinic> {
-        const clinic = await clinicRepository.findByNit(nit);
-
-        if (!clinic) {
-            throw new Error("Clinic not found");
-        }
-
-        return clinic;
-    }
-
     async update(id: number, data: ClinicUpdateDto): Promise<Clinic> {
         const affectedCount = await clinicRepository.update(id, data);
 

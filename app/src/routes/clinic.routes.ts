@@ -114,7 +114,7 @@ router.get("/:id", verifyToken, clinicController.findOneClinic);
 /**
  * @openapi
  * /clinic/{id}:
- *   put:
+ *   patch:
  *     summary: Update clinic
  *     description: Just addmin can update the clinics
  *     security:
@@ -165,7 +165,7 @@ router.get("/:id", verifyToken, clinicController.findOneClinic);
  *       409:
  *         description: The NIT belong to another clinic.
  */
-router.put(
+router.patch(
     "/:id",
     verifyToken,
     authorizeRoles("admin"),

@@ -15,8 +15,6 @@ export interface ClinicServiceInterface {
 
     findOne(id: number): Promise<Clinic>;
 
-    findByNit(id: number): Promise<Clinic>;
-
     update(id: number, data: ClinicUpdateDto): Promise<Clinic>;
 
     delete(id: number): Promise<boolean>;
